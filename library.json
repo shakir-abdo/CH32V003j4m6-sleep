@@ -1,0 +1,20 @@
+{
+  "name": "CH32V003j4m6-sleep",
+  "version": "1.0.0",
+  "description": "Deep sleep library for CH32V003j4m6 microcontroller",
+  "keywords": "ch32v003,CH32V003j4m6, sleep, deep sleep, power management",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/CH32V003j4m6-sleep.git"
+  },
+  "authors": [
+    {
+      "name": "Shakir Abdo",
+      "email": "shicolare1@gmail.com",
+      "url": "https://github.com/shakir-abdo"
+    }
+  ],
+  "license": "MIT",
+  "frameworks": "ch32v003fun",
+  "platforms": "ch32v"
+}
