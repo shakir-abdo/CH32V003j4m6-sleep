@@ -1,5 +1,8 @@
 # ch32v003j4m6 Deep Sleep Library
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Platform: CH32V003](https://img.shields.io/badge/Platform-CH32V003-blue.svg)](http://www.wch-ic.com/products/CH32V003.html)
+
 A simple and efficient deep sleep management library for ch32v003j4m6 microcontrollers. This library provides easy-to-use functions for managing deep sleep modes with timer and/or interrupt wake-up capabilities.
 
 ## Features
