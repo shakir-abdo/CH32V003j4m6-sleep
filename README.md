@@ -1,160 +1,145 @@
-# ch32v003j4m6 Deep Sleep Library
+# DeepSleep Library for CH32V003J4M6
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Platform: CH32V003](https://img.shields.io/badge/Platform-CH32V003-blue.svg)](http://www.wch-ic.com/products/CH32V003.html)
 
-A simple and efficient deep sleep management library for ch32v003j4m6 microcontrollers. This library provides easy-to-use functions for managing deep sleep modes with timer and/or interrupt wake-up capabilities.
+A simple and efficient deep sleep management library for CH32V003J4M6 microcontrollers using the ch32v003fun framework. This library provides easy-to-use functions for managing deep sleep modes with timer and external interrupt wake-up capabilities.
 
 ## Features
 
-- Timer-based wake-up
-- External interrupt wake-up (configurable pin)
-- Combined timer and interrupt wake-up
-- Configurable sleep duration
-- Wake-up source detection
-- Low power consumption
-- Simple API
+- Timer-based wake-up (configurable seconds)
+- External interrupt wake-up on any available pin
+- Support for all CH32V003J4M6 pins: PD6, PA2, PC2, PC1, PC4
+- Configurable interrupt triggers: falling, rising, or both edges
+- Low power consumption using sleep mode
+- Simple and intuitive API
+- Built for ch32v003fun framework
 
 ## Installation
 
 ### PlatformIO
 
-1. Create a `lib` folder in your project if it doesn't exist
-2. Clone this repository into the `lib` folder:
-```bash
-cd lib
-git clone https://github.com/your-username/ch32v003j4m6-sleep.git
-```
-
-### Manual Installation
-
-1. Copy the `ch32v003j4m6_sleep.h` and `ch32v003j4m6_sleep.c` files to your project
-2. Include the header file in your code: `#include "ch32v003j4m6_sleep.h"`
+1. Copy the `deepsleep` folder to your project's `lib/` directory
+2. Include the header file in your code: `#include "deepsleep.h"`
 
 ## Usage
 
-### Basic Example
+### Timer-Based Wake-up Example
 
 ```c
-#include "ch32v003j4m6_sleep.h"
+#include "ch32v003fun.h"
+#include "deepsleep.h"
 
-void main() {
-    // Initialize sleep with PA2 as wake-up pin
-    sleep_init(WAKE_PA2);
-
-    // Sleep for 60 seconds, wake on either timer or PA2 interrupt
-    SleepStatus status = sleep_for(60, SLEEP_MODE_BOTH);
-
-    if (status == SLEEP_OK) {
-        switch (get_wakeup_source()) {
-            case WAKEUP_TIMER:
-                // Woke up after timeout
-                break;
-            case WAKEUP_INTERRUPT:
-                // Woke up from button press
-                break;
-        }
+int main() {
+    SystemInit();
+    
+    // Initialize deepsleep library
+    deepsleep_init();
+    
+    // Configure timer wake-up for 60 seconds
+    deepsleep_config_timer(60);
+    
+    while(1) {
+        // Your active code here
+        
+        // Enter deep sleep for 60 seconds
+        deepsleep_enter();
+        
+        // MCU wakes up here after 60 seconds
     }
+    
+    return 0;
 }
 ```
 
-### Sleep Modes
+### External Interrupt Wake-up Example
 
-The library supports three sleep modes:
+```c
+#include "ch32v003fun.h"
+#include "deepsleep.h"
 
-1. **Timer Only (SLEEP_MODE_TIMER)**
-   ```c
-   // Sleep for 50 seconds, wake up only after timeout
-   sleep_for(50, SLEEP_MODE_TIMER);
-   ```
-
-2. **Interrupt Only (SLEEP_MODE_INTERRUPT)**
-   ```c
-   // Sleep indefinitely, wake up only on interrupt
-   sleep_for(0, SLEEP_MODE_INTERRUPT);
-   ```
-
-3. **Both Timer and Interrupt (SLEEP_MODE_BOTH)**
-   ```c
-   // Sleep for 60 seconds, wake up on either timeout or interrupt
-   sleep_for(60, SLEEP_MODE_BOTH);
-   ```
+int main() {
+    SystemInit();
+    
+    // Initialize deepsleep library
+    deepsleep_init();
+    
+    // Configure external interrupt on PC1 with falling edge trigger
+    deepsleep_config_external_int(DEEPSLEEP_PIN_PC1, DEEPSLEEP_TRIGGER_FALLING);
+    
+    while(1) {
+        // Your active code here
+        
+        // Enter deep sleep until PC1 interrupt
+        deepsleep_enter();
+        
+        // MCU wakes up here when PC1 goes low
+    }
+    
+    return 0;
+}
+```
 
 ### Available Wake-up Pins
 
-The following pins can be configured as wake-up sources:
+The CH32V003J4M6 supports the following pins for external interrupt wake-up:
 
-- `WAKE_PA2` (Pin 3)
-- `WAKE_PC1` (Pin 5)
-- `WAKE_PC2` (Pin 6)
-- `WAKE_PC4` (Pin 7)
-- `WAKE_PD4` (Pin 8)
-- `WAKE_PD6` (Pin 1)
+- `DEEPSLEEP_PIN_PD6` - Port D, Pin 6
+- `DEEPSLEEP_PIN_PA2` - Port A, Pin 2
+- `DEEPSLEEP_PIN_PC2` - Port C, Pin 2
+- `DEEPSLEEP_PIN_PC1` - Port C, Pin 1
+- `DEEPSLEEP_PIN_PC4` - Port C, Pin 4
 
-### Error Handling
+### Interrupt Trigger Types
 
-The library provides comprehensive error handling:
-
-```c
-SleepStatus status = sleep_for(60, SLEEP_MODE_BOTH);
-switch (status) {
-    case SLEEP_OK:
-        // Operation successful
-        break;
-    case SLEEP_NO_INT_PIN:
-        // No interrupt pin configured
-        break;
-    case SLEEP_INVALID_PIN:
-        // Invalid pin specified
-        break;
-    case SLEEP_TOO_SHORT:
-        // Sleep time too short
-        break;
-    case SLEEP_ERROR:
-        // General error
-        break;
-}
-```
+- `DEEPSLEEP_TRIGGER_FALLING` - Trigger on falling edge (high to low)
+- `DEEPSLEEP_TRIGGER_RISING` - Trigger on rising edge (low to high)
+- `DEEPSLEEP_TRIGGER_BOTH` - Trigger on both edges
 
 ## API Reference
 
 ### Functions
 
-#### `sleep_init(WakePin pin)`
-Initializes the sleep functionality with optional wake-up pin.
-- Parameters:
-  - `pin`: Wake-up pin (use NO_PIN for timer-only operation)
-- Returns: `SleepStatus`
+#### `void deepsleep_init(void)`
+Initializes the deepsleep library. Must be called before any other deepsleep functions.
 
-#### `sleep_for(uint32_t seconds, SleepMode mode)`
-Enters sleep mode for specified duration.
-- Parameters:
-  - `seconds`: Sleep duration in seconds (0 for interrupt-only mode)
-  - `mode`: Sleep mode (TIMER, INTERRUPT, or BOTH)
-- Returns: `SleepStatus`
+#### `void deepsleep_config_timer(uint32_t seconds)`
+Configures timer-based wake-up.
+- **Parameters:**
+  - `seconds`: Sleep duration in seconds (1-65535)
+- **Example:** `deepsleep_config_timer(30);` // Sleep for 30 seconds
 
-#### `get_wakeup_source()`
-Gets the source that caused wake-up.
-- Returns: `WakeupSource`
+#### `void deepsleep_config_external_int(deepsleep_wake_pin_t pin, deepsleep_trigger_t trigger)`
+Configures external interrupt wake-up.
+- **Parameters:**
+  - `pin`: Wake-up pin (DEEPSLEEP_PIN_PD6, DEEPSLEEP_PIN_PA2, etc.)
+  - `trigger`: Trigger type (DEEPSLEEP_TRIGGER_FALLING, DEEPSLEEP_TRIGGER_RISING, DEEPSLEEP_TRIGGER_BOTH)
+- **Example:** `deepsleep_config_external_int(DEEPSLEEP_PIN_PC1, DEEPSLEEP_TRIGGER_FALLING);`
 
-#### `set_wake_pin(WakePin pin)`
-Configures a new wake-up pin after initialization.
-- Parameters:
-  - `pin`: New wake-up pin
-- Returns: `SleepStatus`
+#### `void deepsleep_enter(void)`
+Enters deep sleep mode. The MCU will wake up based on the configured method (timer or external interrupt).
+
+#### `uint8_t deepsleep_is_awake(void)`
+Checks if the MCU has woken up from sleep.
+- **Returns:** 1 if awake, 0 if still sleeping
+
+#### `void deepsleep_reset_wake_flag(void)`
+Resets the internal wake-up flag.
 
 ## Hardware Configuration
 
 The library uses:
-- Auto-Wake-Up (AWU) feature with LSI oscillator
-- External interrupt on configured pin
-- Power-down mode for minimal power consumption
+- **TIM1** for timer-based wake-up with configurable timeout
+- **External interrupts (EXTI)** on specified pins
+- **Sleep mode** (not deep power-down) to maintain peripheral functionality
+- **Pull-up resistors** automatically enabled on interrupt pins
 
 ## Power Consumption
 
-In deep sleep mode, the ch32v003j4m6 typically consumes:
-- ~2.5µA with LSI running (timer mode)
-- ~1.5µA in interrupt-only mode
+In sleep mode, the CH32V003J4M6 typically consumes:
+- **Timer mode:** ~10µA with TIM1 running
+- **Interrupt mode:** ~5µA with EXTI configured
+- **Active mode:** ~1-3mA depending on clock frequency and peripheral usage
 
 ## License
 

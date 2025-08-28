@@ -1,6 +1,6 @@
 {
   "name": "CH32V003j4m6-sleep",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Deep sleep library for CH32V003j4m6 microcontroller",
   "keywords": "ch32v003,CH32V003j4m6, sleep, deep sleep, power management",
   "repository": {
